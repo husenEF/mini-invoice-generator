@@ -1,0 +1,6 @@
+{
+  "name": "Invoice Generator",
+  "description": "An invoice generator that allows creating customized invoices and exporting them as PDF files.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

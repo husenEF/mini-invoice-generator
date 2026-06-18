@@ -16,10 +16,17 @@ export const formatIDR = (value: number) => {
 };
 
 export function InvoicePreview({ data }: Props) {
-  const subtotal = data.items.reduce(
+  const grossSubtotal = data.items.reduce(
     (acc, item) => acc + item.quantity * item.unitPrice,
     0
   );
+
+  const totalDiscount = data.items.reduce(
+    (acc, item) => acc + item.quantity * (item.discount || 0),
+    0
+  );
+
+  const netTotal = grossSubtotal - totalDiscount;
 
   return (
     <div
@@ -32,20 +39,20 @@ export function InvoicePreview({ data }: Props) {
             className="text-4xl font-bold uppercase tracking-wide mb-2"
             style={{ color: data.themeColor || "#0056b3" }}
           >
-            {data.companyName}
+            {data.companyName || "NAMA PERUSAHAAN"}
           </h1>
           <p className="text-[#4b5563] whitespace-pre-line text-sm">
-            {data.companyAddress}
+            {data.companyAddress || "Alamat Perusahaan"}
           </p>
         </div>
         <div className="text-left sm:text-right print:text-right">
           <h2 className="text-3xl font-bold text-[#1f2937] mb-4">INVOICE</h2>
           <div className="text-sm text-[#374151] space-y-1">
             <p>
-              <span className="font-semibold">No:</span> {data.invoiceNo}
+              <span className="font-semibold">No:</span> {data.invoiceNo || "INV/XXXX/XXX"}
             </p>
             <p>
-              <span className="font-semibold">Tanggal:</span> {data.date}
+              <span className="font-semibold">Tanggal:</span> {data.date || "-"}
             </p>
           </div>
         </div>
@@ -74,39 +81,64 @@ export function InvoicePreview({ data }: Props) {
         <table className="w-full text-sm text-left min-w-[500px] print:min-w-full">
           <thead>
             <tr className="bg-[#f9fafb] border-y border-[#e5e7eb]">
-            <th className="py-3 px-4 font-semibold text-[#374151] w-1/2">
-              Deskripsi Produk
-            </th>
-            <th className="py-3 px-4 font-semibold text-[#374151] text-center">
-              Jumlah
-            </th>
-            <th className="py-3 px-4 font-semibold text-[#374151] text-right">
-              Harga Satuan
-            </th>
-            <th className="py-3 px-4 font-semibold text-[#374151] text-right">
-              Total
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.items.map((item) => (
-            <tr
-              key={item.id}
-              className="border-b border-[#f3f4f6]"
-            >
-              <td className="py-3 px-4 text-[#1f2937]">{item.description}</td>
-              <td className="py-3 px-4 text-[#1f2937] text-center">
-                {item.quantity}
-              </td>
-              <td className="py-3 px-4 text-[#1f2937] text-right">
-                {formatIDR(item.unitPrice)}
-              </td>
-              <td className="py-3 px-4 text-[#1f2937] text-right">
-                {formatIDR(item.quantity * item.unitPrice)}
-              </td>
+              <th className="py-3 px-4 font-semibold text-[#374151] w-1/2">
+                Deskripsi Produk
+              </th>
+              <th className="py-3 px-4 font-semibold text-[#374151] text-center">
+                Jumlah
+              </th>
+              <th className="py-3 px-4 font-semibold text-[#374151] text-right">
+                Harga Satuan
+              </th>
+              <th className="py-3 px-4 font-semibold text-[#374151] text-right">
+                Total
+              </th>
             </tr>
-          ))}
-        </tbody>
+          </thead>
+          <tbody>
+            {data.items.map((item) => {
+              const discountVal = item.discount || 0;
+              const unitPriceVal = item.unitPrice || 0;
+              const quantityVal = item.quantity || 0;
+              const hasDiscount = discountVal > 0;
+              const finalUnitPrice = Math.max(0, unitPriceVal - discountVal);
+              const rowTotal = quantityVal * finalUnitPrice;
+
+              return (
+                <tr
+                  key={item.id}
+                  className="border-b border-[#f3f4f6]"
+                >
+                  <td className="py-3 px-4 text-[#1f2937]">
+                    <div className="font-medium">{item.description || "Nama Produk / Jasa"}</div>
+                  </td>
+                  <td className="py-3 px-4 text-[#1f2937] text-center">
+                    {quantityVal}
+                  </td>
+                  <td className="py-3 px-4 text-[#1f2937] text-right">
+                    {hasDiscount ? (
+                      <div className="text-right">
+                        <div className="text-xs text-gray-400 line-through">
+                          {formatIDR(unitPriceVal)}
+                        </div>
+                        <div className="text-xs text-red-500 font-medium">
+                          -{formatIDR(discountVal)}
+                        </div>
+                        <div className="font-medium text-gray-900">
+                          {formatIDR(finalUnitPrice)}
+                        </div>
+                      </div>
+                    ) : (
+                      formatIDR(unitPriceVal)
+                    )}
+                  </td>
+                  <td className="py-3 px-4 text-[#1f2937] text-right font-medium">
+                    {formatIDR(rowTotal)}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
         </table>
       </div>
 
@@ -123,8 +155,14 @@ export function InvoicePreview({ data }: Props) {
         <div className="w-full sm:w-1/2 print:w-1/2">
           <div className="flex justify-between py-2 px-4 text-[#1f2937]">
             <span className="font-medium text-base">Subtotal</span>
-            <span>{formatIDR(subtotal)}</span>
+            <span>{formatIDR(grossSubtotal)}</span>
           </div>
+          {totalDiscount > 0 && (
+            <div className="flex justify-between py-2 px-4 text-red-600">
+              <span className="font-medium text-base">Total Potongan (Discount)</span>
+              <span>-{formatIDR(totalDiscount)}</span>
+            </div>
+          )}
           <div
             className="flex justify-between py-3 px-4 mt-2"
             style={{ backgroundColor: `${data.themeColor || "#0056b3"}1A` }}
@@ -139,7 +177,7 @@ export function InvoicePreview({ data }: Props) {
               className="font-bold text-lg"
               style={{ color: data.themeColor || "#0056b3" }}
             >
-              {formatIDR(subtotal)}
+              {formatIDR(netTotal)}
             </span>
           </div>
         </div>

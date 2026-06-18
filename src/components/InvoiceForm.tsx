@@ -17,6 +17,7 @@ export function InvoiceForm({ data, onChange }: Props) {
       description: "",
       quantity: 1,
       unitPrice: 0,
+      discount: 0,
     };
     updateField("items", [...data.items, newItem]);
   };
@@ -131,24 +132,34 @@ export function InvoiceForm({ data, onChange }: Props) {
                   className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <div className="w-24">
-                <label className="block text-xs text-gray-500 mb-1">Quantity</label>
+              <div className="w-20">
+                <label className="block text-xs text-gray-500 mb-1">Qty</label>
                 <input
                   type="number"
                   min="1"
                   value={item.quantity}
                   onChange={(e) => updateItem(item.id, "quantity", parseInt(e.target.value) || 0)}
-                  className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <div className="w-32">
+              <div className="w-28">
                 <label className="block text-xs text-gray-500 mb-1">Unit Price</label>
                 <input
                   type="number"
                   min="0"
                   value={item.unitPrice}
                   onChange={(e) => updateItem(item.id, "unitPrice", parseInt(e.target.value) || 0)}
-                  className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="w-24">
+                <label className="block text-xs text-gray-500 mb-1">Disc / Item</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={item.discount || 0}
+                  onChange={(e) => updateItem(item.id, "discount", parseInt(e.target.value) || 0)}
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div className="pt-5">

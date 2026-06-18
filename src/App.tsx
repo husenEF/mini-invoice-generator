@@ -16,6 +16,7 @@ const initialData: InvoiceData = {
       description: "",
       quantity: 1,
       unitPrice: 0,
+      discount: 0,
     },
   ],
   notes: "",
